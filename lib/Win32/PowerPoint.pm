@@ -3,7 +3,7 @@ package Win32::PowerPoint;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use File::Spec;
 use Win32::OLE;
@@ -212,7 +212,7 @@ of the Text.
 =head1 TODO
 
 A lot, but if you want to make the most of PowerPoint, use Win32::OLE
-directly, or better, use PowerPoint itself (and maybe its VBA) ;)
+directly, or rather, use PowerPoint itself (and maybe its VBA) ;)
 
 =head1 AUTHOR
 
