@@ -3,7 +3,7 @@ package Win32::PowerPoint;
 use strict;
 use warnings;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use File::Spec;
 use Win32::OLE;
@@ -19,6 +19,16 @@ sub new {
     slide        => undef,
   }, $class;
 
+  $self->connect_or_invoke;
+
+  return $self;
+}
+
+##### application #####
+
+sub connect_or_invoke {
+  my $self = shift;
+
   $self->{app} = Win32::OLE->GetActiveObject('PowerPoint.Application');
 
   unless (defined $self->{app}) {
@@ -26,8 +36,6 @@ sub new {
       or die Win32::OLE->LastError;
     $self->{was_invoked} = 1;
   }
-
-  return $self;
 }
 
 sub quit {
@@ -38,6 +46,14 @@ sub quit {
   $self->{app}->Quit;
   $self->{app} = undef;
 }
+
+sub application {
+  my $self = shift;
+
+  $self->{app};
+}
+
+##### presentation #####
 
 sub new_presentation {
   my $self = shift;
@@ -59,6 +75,21 @@ sub save_presentation {
   $self->{presentation}->SaveAs( File::Spec->rel2abs($file) );
 }
 
+sub close_presentation {
+  my $self = shift;
+
+  $self->{presentation}->Close;
+  $self->{presentation} = undef;
+}
+
+sub presentation {
+  my $self = shift;
+
+  $self->{presentation};
+}
+
+##### slide #####
+
 sub new_slide {
   my $self = shift;
 
@@ -66,6 +97,12 @@ sub new_slide {
     $self->{presentation}->Slides->Count + 1,
     $self->{c}->LayoutBlank
   ) or die Win32::OLE->LastError;
+}
+
+sub slide {
+  my $self = shift;
+
+  $self->{slide};
 }
 
 sub add_text {
@@ -78,7 +115,7 @@ sub add_text {
   $text =~ s/\n/\r/gs;
 
   my $num_of_boxes = $self->{slide}->Shapes->Count;
-  my $last   = $self->{slide}->Shapes($num_of_boxes);
+  my $last  = $num_of_boxes ? $self->{slide}->Shapes($num_of_boxes) : undef;
   my ($left, $top, $width, $height);
   if ($last) {
     $left   = $option->{left}   || $last->Left;
@@ -93,12 +130,12 @@ sub add_text {
     $height = $option->{height} || 200;
   }
 
-  my $new_box = $self->{slide}->Shapes->AddTextbox(
+  my $new_textbox = $self->{slide}->Shapes->AddTextbox(
     $self->{c}->TextOrientationHorizontal,
     $left, $top, $width, $height
   );
 
-  my $frame = $new_box->TextFrame;
+  my $frame = $new_textbox->TextFrame;
   my $range = $frame->TextRange;
 
   $frame->{WordWrap} = $self->{c}->True;
@@ -111,15 +148,14 @@ sub add_text {
   $range->Font->{Underline} = $self->{c}->True if $option->{underline};
   $range->Font->{Size}      = $option->{size}  if $option->{size};
 
+  $range->ActionSettings(
+    $self->{c}->MouseClick
+  )->Hyperlink->{Address} = $option->{link} if $option->{link};
+
   $frame->{AutoSize} = $self->{c}->AutoSizeNone;
   $frame->{AutoSize} = $self->{c}->AutoSizeShapeToFitText;
-}
 
-sub close_presentation {
-  my $self = shift;
-
-  $self->{presentation}->Close;
-  $self->{presentation} = undef;
+  return $new_textbox;
 }
 
 sub DESTROY {
@@ -151,6 +187,7 @@ Win32::PowerPoint - helps to convert texts to PP slides
 
       $pp->add_text($slide->title, { size => 40, bold => 1 });
       $pp->add_text($slide->body);
+      $pp->add_text($slide->link,  { link => $slide->link });
     }
 
     $pp->save_presentation('slide.ppt');
@@ -171,9 +208,13 @@ you can add texts to your new slides/presentation and save it.
 
 Invokes (or connects to) PowerPoint.
 
+=head2 connect_or_invoke
+
+Explicitly connects to (or invoke) PowerPoint.
+
 =head2 quit
 
-Explicitly disconnects and close PowerPoint this module (or you!) invoked.
+Explicitly disconnects and close PowerPoint this module (or you) invoked.
 
 =head2 new_presentation
 
@@ -187,7 +228,7 @@ show slides (it just starts full screen slideshow with doubleclick).
 
 =head2 close_presentation
 
-Explicitly closes the presentation
+Explicitly closes the presentation.
 
 =head2 new_slide
 
@@ -207,12 +248,42 @@ of the Textbox.
 
 of the Text.
 
+=item link
+
+hyperlink address of the Text.
+
 =back
 
-=head1 TODO
+=head1 IF YOU WANT TO GO INTO DETAIL
 
-A lot, but if you want to make the most of PowerPoint, use Win32::OLE
-directly, or rather, use PowerPoint itself (and maybe its VBA) ;)
+This module uses Win32::OLE internally. You can fully control PowerPoint
+through these accessors.
+
+=head2 application
+
+returns Application object.
+
+    print $pp->application->Name;
+
+=head2 presentation
+
+returns current Presentation object (maybe ActivePresentation but that's
+not assured).
+
+    $pp->save_presentation('sample.ppt') unless $pp->presentation->Saved;
+
+    while (my $last = $pp->presentation->Slides->Count) {
+      $pp->presentation->Slides($last)->Delete;
+    }
+
+=head2 slide
+
+returns current Slide object.
+
+    $pp->slide->Export(".\\slide_01.jpg",'jpg');
+
+    $pp->slide->Shapes(1)->TextFrame->TextRange
+       ->Characters(1, 5)->Font->{Bold} = $pp->{c}->True;
 
 =head1 AUTHOR
 

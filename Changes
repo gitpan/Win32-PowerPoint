@@ -1,5 +1,10 @@
 Revision history for Win32-PowerPoint
 
+0.03  2006/07/19
+  - add_text() now accepts link option (Nguyen Minh Duc's request).
+  - added several Win32::OLE accessors.
+  - added some basic tests.
+
 0.02  2006/07/02
   - oops. fotgot to include Win32::PowerPoint::Constants.
 

@@ -3,7 +3,7 @@ package Win32::PowerPoint::Constants;
 use strict;
 use Carp;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 our $AUTOLOAD;
 
@@ -12,33 +12,37 @@ sub new {
   bless {
 
 # ppSlideLayout
-    LayoutBlank => 12,
-    LayoutText  => 2,
-    LayoutTitle => 1,
+    ppLayoutBlank => 12,
+    ppLayoutText  => 2,
+    ppLayoutTitle => 1,
 
 # ppAutoSize
-    AutoSizeNone           => 0,
-    AutoSizeShapeToFitText => 1,
-    AutoSizeMixed          => -2,
+    ppAutoSizeNone           => 0,
+    ppAutoSizeShapeToFitText => 1,
+    ppAutoSizeMixed          => -2,
 
 # ppSaveAsFileType
-    SaveAsPresentation => 1,
-    SaveAsShow         => 7,
+    ppSaveAsPresentation => 1,
+    ppSaveAsShow         => 7,
 
 # ppParagraphAlignment
-    AlignLeft       => 1,
-    AlignCenter     => 2,
-    AlignRight      => 3,
-    AlignJustitfy   => 4,
-    AlignDistribute => 5,
-    AlignmentMixed  => -2,
+    ppAlignLeft       => 1,
+    ppAlignCenter     => 2,
+    ppAlignRight      => 3,
+    ppAlignJustitfy   => 4,
+    ppAlignDistribute => 5,
+    ppAlignmentMixed  => -2,
+
+# ppMouseActivation
+    ppMouseClick => 1,
+    ppMouseOver  => 2,
 
 # msoTextOrientation
-    TextOrientationHorizontal => 1,
+    msoTextOrientationHorizontal => 1,
 
 # msoTriState
-    True  => -1,
-    False => 0,
+    msoTrue  => -1,
+    msoFalse => 0,
 
   }, $class;
 }
@@ -47,7 +51,9 @@ sub AUTOLOAD {
   my $self = shift;
   my $name = $AUTOLOAD;
   $name =~ s/.*://;
-  if (exists $self->{$name}) { return $self->{$name}; }
+  if (exists $self->{$name})      { return $self->{$name}; }
+  if (exists $self->{"pp$name"})  { return $self->{"pp$name"}; }
+  if (exists $self->{"mso$name"}) { return $self->{"mso$name"}; }
   croak "constant $name does not exist";
 }
 
