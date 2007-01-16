@@ -3,7 +3,7 @@ package Win32::PowerPoint::Constants;
 use strict;
 use Carp;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 our $AUTOLOAD;
 
@@ -36,6 +36,57 @@ sub new {
 # ppMouseActivation
     ppMouseClick => 1,
     ppMouseOver  => 2,
+
+# msoPatternType
+    msoPattern10Percent              => 2,
+    msoPattern20Percent              => 3,
+    msoPattern25Percent              => 4,
+    msoPattern30Percent              => 5,
+    msoPattern40Percent              => 6,
+    msoPattern50Percent              => 7,
+    msoPattern5Percent               => 1,
+    msoPattern60Percent              => 8,
+    msoPattern70Percent              => 9,
+    msoPattern75Percent              => 10,
+    msoPattern80Percent              => 11,
+    msoPattern90Percent              => 12,
+    msoPatternDarkDownwardDiagonal   => 15,
+    msoPatternDarkHorizontal         => 13,
+    msoPatternDarkUpwardDiagonal     => 16,
+    msoPatternDarkVertical           => 14,
+    msoPatternDashedDownwardDiagonal => 28,
+    msoPatternDashedHorizontal       => 32,
+    msoPatternDashedUpwardDiagonal   => 27,
+    msoPatternDashedVertical         => 31,
+    msoPatternDiagonalBrick          => 40,
+    msoPatternDivot                  => 46,
+    msoPatternDottedDiamond          => 24,
+    msoPatternDottedGrid             => 45,
+    msoPatternHorizontalBrick        => 35,
+    msoPatternLargeCheckerBoard      => 36,
+    msoPatternLargeConfetti          => 33,
+    msoPatternLargeGrid              => 34,
+    msoPatternLightDownwardDiagonal  => 21,
+    msoPatternLightHorizontal        => 19,
+    msoPatternLightUpwardDiagonal    => 22,
+    msoPatternLightVertical          => 20,
+    msoPatternMixed                  => -2,
+    msoPatternNarrowHorizontal       => 30,
+    msoPatternNarrowVertical         => 29,
+    msoPatternOutlinedDiamond        => 41,
+    msoPatternPlaid                  => 42,
+    msoPatternShingle                => 47,
+    msoPatternSmallCheckerBoard      => 17,
+    msoPatternSmallConfetti          => 37,
+    msoPatternSmallGrid              => 23,
+    msoPatternSolidDiamond           => 39,
+    msoPatternSphere                 => 43,
+    msoPatternTrellis                => 18,
+    msoPatternWave                   => 48,
+    msoPatternWeave                  => 44,
+    msoPatternWideDownwardDiagonal   => 25,
+    msoPatternWideUpwardDiagonal     => 26,
+    msoPatternZigZag                 => 38,
 
 # msoTextOrientation
     msoTextOrientationHorizontal => 1,
