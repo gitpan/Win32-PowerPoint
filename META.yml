@@ -1,9 +1,11 @@
 --- #YAML:1.0
 name:                Win32-PowerPoint
-version:             0.05
+version:             0.06
 abstract:            helps to convert texts to PP slides
 license:             perl
-generated_by:        ExtUtils::MakeMaker version 6.32
+author:              
+    - Kenichi Ishigaki <ishigaki@cpan.org>
+generated_by:        ExtUtils::MakeMaker version 6.42
 distribution_type:   module
 requires:     
     Class::Accessor:               0
@@ -12,7 +14,5 @@ requires:
     Test::More:                    0
     Win32::OLE:                    0
 meta-spec:
-    url:     http://module-build.sourceforge.net/META-spec-v1.2.html
-    version: 1.2
-author:
-    - Kenichi Ishigaki <ishigaki@cpan.org>
+    url:     http://module-build.sourceforge.net/META-spec-v1.3.html
+    version: 1.3
