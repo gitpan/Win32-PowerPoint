@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Win32-PowerPoint
-version:             0.08
+version:             0.08_01
 abstract:            helps to convert texts to PP slides
 license:             perl
 author:              
@@ -11,7 +11,7 @@ requires:
     Class::Accessor:               0
     Exporter::Lite:                0
     File::Spec:                    0
-    Test::More:                    0
+    Test::More:                    0.47
     Win32::OLE:                    0
 meta-spec:
     url:     http://module-build.sourceforge.net/META-spec-v1.3.html
