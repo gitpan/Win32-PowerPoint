@@ -3,9 +3,8 @@ package Win32::PowerPoint;
 use strict;
 use warnings;
 use Carp;
-use base qw( Class::Accessor::Fast );
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 use File::Spec;
 use File::Basename;
@@ -19,8 +18,6 @@ use Win32::PowerPoint::Utils qw(
   convert_cygwin_path
   _defined_or
 );
-
-__PACKAGE__->mk_ro_accessors( qw( c application presentation slide ) );
 
 sub new {
   my $class = shift;
@@ -37,7 +34,11 @@ sub new {
   return $self;
 }
 
+sub c { shift->{c} }
+
 ##### application #####
+
+sub application { shift->{application} }
 
 sub connect_or_invoke {
   my $self = shift;
@@ -78,6 +79,15 @@ sub new_presentation {
     $self->presentation->SlideMaster->Background->Fill,
     %options
   );
+}
+
+sub presentation {
+  my $self = shift;
+
+  return unless $self->{application};
+
+  $self->{presentation} ||= $self->application->ActivePresentation
+    or die Win32::OLE->LastError;
 }
 
 sub _apply_background {
@@ -183,6 +193,15 @@ sub _set_footer {
 
 ##### slide #####
 
+sub slide {
+  my ($self, $id) = @_;
+  if ($id) {
+    $self->{slide} = $self->presentation->Slides->Item($id)
+      or die Win32::OLE->LastError;
+  }
+  $self->{slide};
+}
+
 sub new_slide {
   my $self = shift;
 
@@ -192,6 +211,7 @@ sub new_slide {
     $self->presentation->Slides->Count + 1,
     $self->c->LayoutBlank
   ) or die Win32::OLE->LastError;
+  $self->{last} = undef;
 
   $self->_apply_background(
     $self->slide->Background->Fill,
@@ -217,10 +237,8 @@ sub add_text {
 
   $text =~ s/\n/\r/gs;
 
-  my $num_of_boxes = $self->slide->Shapes->Count;
-  my $last  = $num_of_boxes ? $self->slide->Shapes($num_of_boxes) : undef;
   my ($left, $top, $width, $height);
-  if ($last) {
+  if (my $last = $self->{last}) {
     $left   = _defined_or($options->{left},   $last->Left);
     $top    = _defined_or($options->{top},    $last->Top + $last->Height + 20);
     $width  = _defined_or($options->{width},  $last->Width);
@@ -250,6 +268,8 @@ sub add_text {
   $frame->{AutoSize} = $self->c->AutoSizeNone;
   $frame->{AutoSize} = $self->c->AutoSizeShapeToFitText;
 
+  $self->{last} = $new_textbox;
+
   return $new_textbox;
 }
 
@@ -261,10 +281,8 @@ sub add_picture {
 
   $options = {} unless ref $options eq 'HASH';
 
-  my $num_of_boxes = $self->slide->Shapes->Count;
-  my $last  = $num_of_boxes ? $self->slide->Shapes($num_of_boxes) : undef;
   my ($left, $top);
-  if ($last) {
+  if (my $last = $self->{last}) {
     $left   = _defined_or($options->{left}, $last->Left);
     $top    = _defined_or($options->{top},  $last->Top + $last->Height + 20);
   }
@@ -281,6 +299,8 @@ sub add_picture {
     ),
     $left, $top, $options->{width}, $options->{height}
   );
+
+  $self->{last} = $new_picture;
 
   return $new_picture;
 }
@@ -417,9 +437,7 @@ Win32::PowerPoint - helps to convert texts to PP slides
 
 =head1 DESCRIPTION
 
-Win32::PowerPoint mainly aims to help to convert L<Spork> (or Sporx)
-texts to PowerPoint slides. Though there's no converter at the moment,
-you can add texts to your new slides/presentation and save it. 
+Win32::PowerPoint helps you to create a PowerPoint presentation. You can add texts/pictures incrementally to your slides.
 
 =head1 METHODS
 
@@ -589,7 +607,7 @@ hyperlink address of the Text.
 
 =head1 IF YOU WANT TO GO INTO DETAIL
 
-This module uses L<Win32::OLE> internally. You can fully control PowerPoint through these accessors. If you don't know what to do with them, launch PowerPoint, and try C<Record New Macro> (from the C<Tools> menu, then, C<Macro>, and voila) and do what you want, and see what's recorded (from the C<Tools> menu, then C<Macro>, and C<Macro...> submenu. You'll see Visual Basic Editor screen). If you don't know how to convert Visual Basic statements to perl's OLE methods, see L<Win32::OLE> and other appropriate documents like intermediate books on PowerPoint and Visual Basic (after all, this module is just a thin wrapper of them).
+This module uses L<Win32::OLE> internally. You can fully control PowerPoint through the following accessors. See L<Win32::OLE> and other appropriate documents like intermediate books on PowerPoint and Visual Basic for details (after all, this module is just a thin wrapper of them). If you're still using old PowerPoint (2003 and older), try C<Record New Macro> (from the C<Tools> menu, then, C<Macro>, and voila) and do what you want, and see what's recorded (from the C<Tools> menu, then C<Macro>, and C<Macro...> submenu. You'll see Visual Basic Editor screen).
 
 =head2 application
 
@@ -615,6 +633,8 @@ returns a current Slide object.
 
     $pp->slide->Shapes(1)->TextFrame->TextRange
        ->Characters(1, 5)->Font->{Bold} = $pp->c->True;
+
+As of 0.10, you can pass an index number to get an arbitrary Slide object.
 
 =head2 c
 
